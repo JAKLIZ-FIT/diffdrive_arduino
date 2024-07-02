@@ -23,6 +23,12 @@
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "rclcpp/rclcpp.hpp"
 
+// TODO remove
+// for debug print of encoder values
+//#include <string>
+//#include <sstream>
+//TODO remove
+
 namespace diffdrive_arduino
 {
 hardware_interface::CallbackReturn DiffDriveArduinoHardware::on_init(
@@ -215,6 +221,13 @@ hardware_interface::return_type DiffDriveArduinoHardware::read(
   pos_prev = wheel_r_.pos;
   wheel_r_.pos = wheel_r_.calc_enc_angle();
   wheel_r_.vel = (wheel_r_.pos - pos_prev) / delta_seconds;
+
+  // TODO remove  
+  //std::ostringstream oss;
+  //oss << "Encoder Data:" << wheel_l_.enc << "," << wheel_r_.enc << "," << wheel_l_.pos << "," << wheel_r_.pos << ","<< wheel_l_.vel <<","<< wheel_r_.vel;
+  //const std::string my_debug_var = oss.str();
+  //RCLCPP_INFO(rclcpp::get_logger("DiffDriveArduinoHardware"), my_debug_var.c_str());
+  //std::cout << wheel_l_.enc << "," << wheel_r_.enc << "," << wheel_l_.pos << "," << wheel_r_.pos << ","<< wheel_l_.vel <<","<< wheel_r_.vel << std::endl;
 
   return hardware_interface::return_type::OK;
 }

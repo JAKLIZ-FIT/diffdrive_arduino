@@ -84,17 +84,53 @@ public:
     std::string response = send_msg("\r");
   }
 
+  // My added code (Jiri Zilka)
+  bool verifyChecksum(const std::string& message, std::string delimiter) {
+    size_t last_delim = message.find_last_of(delimiter);
+    if (last_delim == std::string::npos) {
+        return false;
+    }
+
+    std::string data = message.substr(0, last_delim);
+    int received_checksum = stoi(message.substr(last_delim + delimiter.length()));
+    int calculated_checksum = 0;
+
+    for (char c : data) {
+        calculated_checksum += c;
+    }
+
+    return calculated_checksum == received_checksum;
+  }
+
   void read_encoder_values(int &val_1, int &val_2)
   {
     std::string response = send_msg("e\r");
 
     std::string delimiter = " ";
-    size_t del_pos = response.find(delimiter);
-    std::string token_1 = response.substr(0, del_pos);
-    std::string token_2 = response.substr(del_pos + delimiter.length());
 
-    val_1 = std::atoi(token_1.c_str());
-    val_2 = std::atoi(token_2.c_str());
+    //std::string begin_token = "<"; /// safety checks
+    //std::string end_token = ">"; // TODO extra is this needed? checksum might be enough
+    
+    if (verifyChecksum(response,delimiter))
+    {
+      size_t first_delim = response.find(delimiter);
+      size_t last_delim = response.find_last_of(delimiter);
+
+      if (first_delim == std::string::npos || last_delim == std::string::npos || first_delim == last_delim)
+      {
+        std::cerr << "Malformed message: " << response << std::endl;
+        return;
+      }
+
+      std::string token_1 = response.substr(0, first_delim);
+      std::string token_2 = response.substr(first_delim + delimiter.length(), last_delim-first_delim-delimiter.length());
+
+      val_1 = std::atoi(token_1.c_str());
+      val_2 = std::atoi(token_2.c_str());
+    }
+    else{
+      std::cerr << "Malformed message - Incorrect checksum: " << response << std::endl;
+    }
   }
   void set_motor_values(int val_1, int val_2)
   {
